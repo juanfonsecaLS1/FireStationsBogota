@@ -1,0 +1,11 @@
+.Rproj.user
+
+00_data/
+00_data/*
+
+OTP/
+OTP/*
+
+*.qgz
+
+
