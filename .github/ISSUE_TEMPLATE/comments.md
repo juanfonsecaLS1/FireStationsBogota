@@ -1,6 +1,6 @@
 ---
 name: Comments
-about: Leave a comment to let me improve the site
+about: Leave a comment to improve FireStations Bogota
 title: Comments
 labels: ''
 assignees: ''
