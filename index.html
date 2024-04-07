@@ -1,0 +1,291 @@
+<!-- HTML5 doctype to ensure that Bootstrap works -->
+<!doctype html>
+<html lang="en">
+
+<head>
+  <!-- Loading Leaflet 1.9 -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <!-- Loading the library to load geopackages for leaflet -->
+  <script src="https://unpkg.com/@ngageoint/leaflet-geopackage@4.1.3/dist/leaflet-geopackage.min.js"></script>
+  <meta charset="utf-8">
+  <!-- Loading jQuery version 3.x -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+    integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+  <!-- Optimisation for mobile devices -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Loading the latest version of bootstrap 5.x -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <!-- loading the CSS for bootstrap to work -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+    crossorigin="anonymous"></script>
+  <!-- The link to the font for Bootstrap icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <!-- This allows using a grayscale tile for the basemap-->
+  <script src="lib/TileLayer.Grayscale.js"></script>
+  <!-- loading the local scripts -->
+  <script src="src/main.js"></script>
+  <script src="src/adm_boundaries.js"></script>
+  <script src="src/exp_data.js"></script>
+  <link rel="stylesheet" href="css/custom_bootstrap.css">
+  </script>
+  <link rel="stylesheet" href="css/leaflet_styles.css">
+  <title>Fire Stations in Bogota</title>
+</head>
+<!-- init function to load the main map -->
+
+<body onload=init()>
+  <!-- Creating a bootstrap layout with just two columns -->
+  <div class="row w-100" style="min-height: 100vh;">
+    <!-- Left column -->
+    <div class="col-3 px-4 bg-light text-black sidebar" style="min-height: 100vh;">
+      <!-- <h1 class="display-6 roboto-slab-title text-end py-4">FireStations<br/>Bogota</h1> -->
+      <div class="container align-top">
+        <img src="img/FSbiglogo.png" class="img-fluid w-100" style="padding-top: 120px;" alt="Fire Stations Bogota">
+        <!-- Buttons for about and FAQ -->
+        <div class="input-group mt-4">
+          <button class="btn btn-sm btn-outline-secondary align-self-end" type="button" data-bs-toggle="offcanvas"
+            data-bs-target="#offcanvasInfo" aria-controls="offcanvasInfo">
+            <span class="bi bi-info-circle"></span> About this web
+          </button>
+          <button class="btn btn-sm btn-outline-secondary align-self-end" type="button" data-bs-toggle="offcanvas"
+            data-bs-target="#offcanvasFAQ" aria-controls="offcanvasFAQ">
+            <span class="bi bi-question-circle"></span> Other Info
+          </button>
+        </div>
+        <div class="container-fluid py-3 fw-light fs-6">
+          <p>
+            Use the three options below to explore the isochrones that have been generated for all stations of Bogota's
+            Official Fire Brigade.
+
+          </p>
+          <div class="row">
+            <div class="col-3">
+              <a><small><strong>Jurisidictions:</strong></small> </a>
+            </div>
+            <div class="col">
+              <!-- Switch to hide jurisdictions -->
+              <div class="form-check form-switch">
+                <label class="form-check-label" for="jrsSwitch" id="jrsLabel"><small>Hidden</small></label>
+                <input class="form-check-input" type="checkbox" role="switch" id="jrsSwitch">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Accordion for selecting the type of data to show -->
+      <div class="container fw-light">
+        <div class="accordion w-100 align-self-center" id="accordionMain">
+          <!-- item in the accordion -->
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingZero">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                data-bs-target="#collapseZero" aria-expanded="true" aria-controls="collapseZero">
+                <i class="bi bi-shield"></i></i>&nbsp;City coverage
+              </button>
+            </h2>
+            <div id="collapseZero" class="accordion-collapse collapse" aria-labelledby="headingZero"
+              data-bs-parent="#accordionMain">
+              <div class="accordion-body">
+                <p class="fs-6"> See how long it would take firefighters to reach any place in Bogota</p>
+                <button type="button" class="btn btn-secondary btn-sm position-relative start-50 translate-middle-x"
+                  id="showAllButton" style="width: 40%;">Show</button>
+              </div>
+            </div>
+          </div>
+          <!-- item in the accordion -->
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                <i class="bi bi-stopwatch"></i>&nbsp;Time from each station
+              </button>
+            </h2>
+            <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne"
+              data-bs-parent="#accordionMain">
+              <div class="accordion-body">
+                <p class="fs-6"> See and compare the 20-minutes reach of each station</p>
+                <a><small>Select a fire station:</small> </a>
+                <!-- Select element to choose the fire stations -->
+                <div class="input-group">
+                  <select class="form-select form-select-sm" aria-label=".form-select-sm example" id="stn_list">
+                    <option selected>Choose one...</option>
+                  </select>
+                  <!-- Button for showing isochrones for each station -->
+                  <button type="button" class="btn btn-secondary btn-sm" id="showButton">Show</button>
+                  <button type="button" class="btn btn-outline-secondary btn-sm" id="clearButton">Clear</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- item in the accordion -->
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingTwo">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                <span class="bi bi-exclamation-square"></span>&nbsp;Reported incidents
+              </button>
+            </h2>
+            <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo"
+              data-bs-parent="#accordionMain">
+              <div class="accordion-body">
+                <!-- Section for displaying incidents -->
+                <p class="fs-6 pb-0"> See the history of incidents attended by each station</p>
+                <!-- Select element to choose the fire stations -->
+                <a><small>Select a fire station:</small> </a>
+                <div class="input-group pt-0">
+                  <select class="form-select form-select-sm" aria-label=".form-select-sm example" id="stn_list_inc">
+                    <option selected>Choose one...</option>
+                  </select>
+                  <!-- Button for showing station, isochrone boundaries and incidents -->
+                  <button type="button" class="btn btn-secondary btn-sm" id="showButton_inc">Show</button>
+                </div>
+                <div class="row pt-1">
+                  <div class="col-7">
+                    <a><small>Estimated time:</small> </a>
+                  </div>
+                  <div class="col-5">
+                    <a><small>Year:</small> </a>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-7">
+                    <input type="range" class="form-range" min="5" max="20" step="1" id="isoRange" value="10">
+                  </div>
+                  <div class="col-5">
+                    <input type="range" class="form-range" min="2019" max="2023" step="1" id="yearRange" value="2023">
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-7">
+                    <a id="isoLabel"><small>10 min</small></a>
+                  </div>
+                  <div class="col-5">
+                    <a id="yearLabel"><small>2023</small></a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="container position-absolute top-0 mt-2">
+        <small>
+          <p class="text-muted fw-lighter"> <a href="https://github.com/juanfonsecaLS1/FireStationsBogota"
+              class="btn btn-outline-secondary btn-sm" role="button"> <i class="bi bi-github"></i> </a> | SID:
+            201189627
+            | GEOG5870M | April, 2024. </p>
+        </small>
+      </div>
+    </div>
+    <!-- This is the main offcanvas element which is shown when the web is loaded or the main info button is clicked -->
+    <div class="offcanvas offcanvas-start show" tabindex="-1" id="offcanvasInfo" aria-labelledby="offcanvasInfoLabel">
+      <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="offcanvasInfoLabel">About this site...</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+      </div>
+      <div class="offcanvas-body">
+        <img src="img/FSbiglogo.png" class="img-fluid w-100 py-5 ps-5" alt="Fire Stations Bogota">
+        <div class="fw-light fs-6">
+
+          <p class="pt-4">The distribution of emergency services in a city is key to ensure that timely assistance is
+            available regardless of the time and location of an incident. The Official Fire Brigade in Bogota,
+            Colombia, covers the urban and rural territory of the city with 17 stations.
+          </p>
+
+          <p>How long would it take for the fire services to reach a place in Bogota? Are all areas in Bogota equally
+            serviced? How the current distribution of stations affect response times across the city? </p>
+
+          <p>This site provides a tool for the residents, firefighters, and members of the local
+            government to explore answers to these questions.
+          </p>
+
+          <p>Let's dive in!</p>
+
+          <a href="https://github.com/juanfonsecaLS1/FireStationsBogota/issues/new/choose"
+            class="btn btn-outline-secondary btn-sm position-absolute bottom-0 end-0" role="button"
+            style="margin-bottom: 20px; margin-right: 20px;"> <i class="bi bi-chat-left-text"></i> Leave a comment
+          </a>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasFAQ" aria-labelledby="offcanvasFAQLabel">
+      <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="offcanvasFAQLabel">Other info</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+      </div>
+      <div class="offcanvas-body">
+
+        <div class="fw-light fs-6">
+
+          <h6>What are isochrones?</h6>
+
+          <!-- Image with an example of isochrone -->
+          <img src="img/sample_isochrone.png" class="img-fluid w-75 position-relative start-50 translate-middle-x" alt="Example for Ferias Station">
+
+          <p class="pt-1">
+            Isochrones are lines that enclose the area that is reachable within a timeframe. For example, for
+            the fire stations, the places where a fire respondent can travel to within 5, 10, or 15 min. Unlike the
+            straight line distance, isochrones are produced using the road network to account for the accessibility of
+            certain areas. The isochrones for this web have been generated using the <code>OTP</code> package in R.
+          </p>
+          <h6>Limitations</h6>
+          <p>
+            Many assumptions were involved in the generation of these isochrones; first,
+            it was assumed that fire machines would travel at the same <a class="link-secondary"
+              data-bs-toggle="tooltip" data-bs-title="23 km/h"
+              href="https://www.larepublica.co/economia/entrevista-con-la-secretaria-de-movilidad-de-bogota-deyanira-avila-sobre-trafico-3692049">average
+              speed as the private vehicles in Bogota</a>;
+            second, emergency services use only the public roads in the posted direction; and, finally,
+            there is not impact of traffic congestion on the response time. Therefore, isochrones are expected to
+            represent a conservative scenario.
+
+          </p>
+
+          <h6>Data and Methods</h6>
+          <p>
+            The datasets and scripts used to produce the isochrones in this site are publicly available. You can
+            obtain the data from
+            <a class="link-secondary" data-bs-toggle="tooltip" data-bs-title="Datos Abiertos Bogota"
+              href="https://datosabiertos.bogota.gov.co/">Bogota's open data platform</a> and <a class="link-secondary"
+              data-bs-toggle="tooltip" href="https://extract.bbbike.org/" data-bs-title="BBBike Extract">BBBike</a>; and
+            the code to process them from this <a class="link-secondary"
+              href="https://github.com/juanfonsecaLS1/FireStationsBogota">GitHub
+              repository</a>.
+          </p>
+
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right column for map -->
+    <div div class="col-9 p-0">
+      <!-- Map container -->
+      <div id="mapid" style="height: 100%; width: 100%;"></div>
+    </div>
+  </div>
+  <!-- To initialise the tooltips and popovers -->
+  <script>
+    var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
+    var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+      return new bootstrap.Popover(popoverTriggerEl)
+    })
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+  </script>
+
+
+
+
+</body>
+
+</html>
