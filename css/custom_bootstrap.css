@@ -66,6 +66,8 @@
     --bs-accordion-active-bg: var(--bs-secondary-bg-subtle)
 }
 
+
+
 /* For the select menus same as above*/
 .form-select:focus {
     border-color: #b3b3b3;
